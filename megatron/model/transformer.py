@@ -279,6 +279,7 @@ class ParallelSelfAttention(MegatronModule):
 
         # change view to [b, np, sq, sk]
         attention_scores = matmul_result.view(*output_size)
+        #print("the attention scores:{}".format(attention_scores.sum()))
 
 
         # ==================================================
@@ -306,6 +307,7 @@ class ParallelSelfAttention(MegatronModule):
         # attention scores and attention mask [b, np, sq, sk]
         attention_probs = self.scale_mask_softmax(attention_scores,
                                                   attention_mask)
+        #print("attention_probs:{}".format(attention_probs.sum()))
 
         # This is actually dropping out entire tokens to attend to, which might
         # seem a bit unusual, but is taken from the original Transformer paper.
@@ -405,9 +407,9 @@ class ParallelTransformerLayer(MegatronModule):
 
         # Layernorm on the input data.
         LayerNorm = import_layernorm(args.fp32_residual_connection)
-        self.input_layernorm = LayerNorm(
-            args.hidden_size,
-            eps=args.layernorm_epsilon)
+        #self.input_layernorm = LayerNorm(
+        #    args.hidden_size,
+        #    eps=args.layernorm_epsilon)
 
         # Self attention.
         self.attention = ParallelSelfAttention(attention_mask_func, init_method,
@@ -417,9 +419,9 @@ class ParallelTransformerLayer(MegatronModule):
         self.bias_dropout_fusion = args.bias_dropout_fusion
 
         # Layernorm on the input data.
-        self.post_attention_layernorm = LayerNorm(
-            args.hidden_size,
-            eps=args.layernorm_epsilon)
+        #self.post_attention_layernorm = LayerNorm(
+        #    args.hidden_size,
+        #    eps=args.layernorm_epsilon)
 
         # MLP
         self.mlp = ParallelMLP(init_method,
@@ -430,14 +432,13 @@ class ParallelTransformerLayer(MegatronModule):
         # hidden_states: [b, s, h]
 
         # Layer norm at the begining of the transformer layer.
-        layernorm_output = self.input_layernorm(hidden_states)
+        #layernorm_output = self.input_layernorm(hidden_states)
         # Self attention.
         attention_output, attention_bias = \
-            self.attention(layernorm_output,
+            self.attention(hidden_states,
                            attention_mask,
                            layer_past=layer_past,
                            get_key_value=get_key_value)
-
         if get_key_value:
             attention_output, presents = attention_output
     
@@ -468,10 +469,10 @@ class ParallelTransformerLayer(MegatronModule):
                 self.hidden_dropout)
 
         # Layer norm post the self attention.
-        layernorm_output = self.post_attention_layernorm(layernorm_input)
+        #layernorm_output = self.post_attention_layernorm(layernorm_input)
 
         # MLP.
-        mlp_output, mlp_bias = self.mlp(layernorm_output)
+        mlp_output, mlp_bias = self.mlp(layernorm_input)
         
         # Second residual connection.
         if self.apply_residual_connection_post_layernorm:
@@ -524,9 +525,9 @@ class ParallelTransformer(MegatronModule):
         if mpu.is_pipeline_last_stage():
             # Final layer norm before output.
             LayerNorm = import_layernorm(args.fp32_residual_connection)
-            self.final_layernorm = LayerNorm(
-                args.hidden_size,
-                eps=args.layernorm_epsilon)
+            #self.final_layernorm = LayerNorm(
+            #    args.hidden_size,
+            #    eps=args.layernorm_epsilon)
 
     def _get_layer(self, layer_number):
         return self.layers[layer_number]
@@ -598,7 +599,7 @@ class ParallelTransformer(MegatronModule):
         if mpu.is_pipeline_last_stage():
             # Reverting data format change [s b h] --> [b s h].
             hidden_states = hidden_states.transpose(0, 1).contiguous()
-            output = self.final_layernorm(hidden_states)
+            output = hidden_states #self.final_layernorm(hidden_states)
         else:
             output = hidden_states
         if get_key_value:

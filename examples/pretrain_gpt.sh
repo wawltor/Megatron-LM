@@ -5,20 +5,20 @@
 RANK=0
 WORLD_SIZE=1
 
-DATA_PATH=<Specify path and file prefix>_text_document
-CHECKPOINT_PATH=<Specify path>
+DATA_PATH=/home/qiujinxuan/Megatron-LM/data_dir/my-gpt2_text_document
+CHECKPOINT_PATH=./checkpoints
 
 
-python pretrain_gpt.py \
-       --num-layers 24 \
-       --hidden-size 1024 \
-       --num-attention-heads 16 \
-       --micro-batch-size 4 \
+python pretrain_gpt.py\
+       --num-layers 12 \
+       --hidden-size 1024\
+       --num-attention-heads 16\
+       --micro-batch-size 8 \
        --global-batch-size 8 \
        --seq-length 1024 \
        --max-position-embeddings 1024 \
-       --train-iters 500000 \
-       --lr-decay-iters 320000 \
+       --train-iters 500000\
+       --lr-decay-iters 320000\
        --save $CHECKPOINT_PATH \
        --load $CHECKPOINT_PATH \
        --data-path $DATA_PATH \
@@ -34,8 +34,8 @@ python pretrain_gpt.py \
        --clip-grad 1.0 \
        --lr-warmup-fraction .01 \
        --checkpoint-activations \
-       --log-interval 100 \
+       --log-interval 1 \
        --save-interval 10000 \
        --eval-interval 1000 \
        --eval-iters 10 \
-       --fp16
+       --no-scaled-masked-softmax-fusion
