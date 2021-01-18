@@ -192,7 +192,7 @@ def load_checkpoint(model, optimizer, lr_scheduler, load_arg='load'):
                     tracker_filename))
                 sys.exit()
 
-    assert iteration > 0 or release, 'error parsing metadata file {}'.format(
+    assert iteration >= 0 or release, 'error parsing metadata file {}'.format(
         tracker_filename)
 
     # Checkpoint.

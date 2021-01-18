@@ -145,4 +145,4 @@ if __name__ == "__main__":
 
     pretrain(train_valid_test_datasets_provider, model_provider, forward_step,
              args_defaults={'tokenizer_type': 'GPT2BPETokenizer',
-                            'scaled_upper_triang_masked_softmax_fusion': True})
+                            'scaled_upper_triang_masked_softmax_fusion': False})

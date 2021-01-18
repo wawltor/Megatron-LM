@@ -744,7 +744,7 @@ def training_log(loss_dict, total_loss_dict, learning_rate, iteration,
                 avg = total_loss_dict[key].item() / \
                       float(max(1, total_loss_dict[advanced_iters_key]))
                 if avg > 0.0:
-                    log_string += ' {}: {:.6E} |'.format(key, avg)
+                    log_string += ' {}: {:.6f} |'.format(key, avg)
                 total_loss_dict[key] = torch.cuda.FloatTensor([0.0])
         log_string += ' loss scale: {:.1f} |'.format(loss_scale)
         log_string += ' number of skipped iterations: {:3d} |'.format(
@@ -797,8 +797,12 @@ def train(forward_step_func, model, optimizer, lr_scheduler,
     timers('interval time').start()
     print_datetime('before the start of training step')
     report_memory_flag = True
+
+    save_checkpoint_and_time(iteration, model, optimizer,
+                             lr_scheduler)
     while iteration < args.train_iters:
         update_num_microbatches(args.consumed_train_samples)
+        print("the learning_rate is {}".format(optimizer.state_dict()['param_groups'][0]['lr']))
         loss_dict, skipped_iter = train_step(forward_step_func,
                                              train_data_iterator,
                                              model,
