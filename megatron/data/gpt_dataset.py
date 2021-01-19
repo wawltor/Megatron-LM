@@ -152,7 +152,7 @@ class GPTDataset(torch.utils.data.Dataset):
         self.doc_idx, self.sample_idx, self.shuffle_idx = _build_index_mappings(
             self.name, data_prefix, documents, self.indexed_dataset.sizes,
             num_samples, seq_length, seed)
-
+         
     def __len__(self):
         # -1 is due to data structure used to retieve the index:
         #    sample i --> [sample_idx[i], sample_idx[i+1])
@@ -183,7 +183,8 @@ class GPTDataset(torch.utils.data.Dataset):
                 self.doc_idx[doc_index_l],
                 length=offset_l + 1))
             sample = np.concatenate(sample_list)
-
+        token_arr = np.array(sample, dtype="int64")
+        #print("fuck_data_warn, name:{}, doc_f:{}, doc_l:{}, o_f:{}, o_l:{}, fmax:{}, mean:{}, sum:{}, std:{}, value:{}".format(self.name, doc_index_f, doc_index_l, offset_f, offset_l, np.max(token_arr), np.mean(token_arr), np.sum(token_arr), np.std(token_arr), " ".join([str(data) for data in token_arr.tolist()])), flush=True)
         return {'text': np.array(sample, dtype=np.int64)}
 
 
@@ -272,10 +273,10 @@ def _build_index_mappings(name, data_prefix, documents, sizes,
             from megatron.data import helpers
             assert doc_idx.dtype == np.int32
             assert sizes.dtype == np.int32
-            sample_idx = helpers.build_sample_idx(sizes, doc_idx, seq_length,
-                                                  num_epochs, tokens_per_epoch)
-            # sample_idx = _build_sample_idx(sizes, doc_idx, seq_length,
-            #                               num_epochs, tokens_per_epoch)
+            #sample_idx = helpers.build_sample_idx(sizes, doc_idx, seq_length,
+            #                                      num_epochs, tokens_per_epoch)
+            sample_idx = _build_sample_idx(sizes, doc_idx, seq_length,
+                                           num_epochs, tokens_per_epoch)
             np.save(sample_idx_filename, sample_idx, allow_pickle=True)
             print_rank_0(' > elasped time to build and save sample-idx mapping '
                          '(seconds): {:4f}'.format(time.time() - start_time))
@@ -351,7 +352,7 @@ def _build_doc_idx(documents, num_epochs, np_rng, separate_last_epoch):
         doc_idx[:] = documents
         doc_idx = doc_idx.reshape(-1)
         doc_idx = doc_idx.astype(np.int32)
-        np_rng.shuffle(doc_idx)
+        #np_rng.shuffle(doc_idx)
         return doc_idx
 
     doc_idx_first = _build_doc_idx(documents, num_epochs-1, np_rng, False)
@@ -419,12 +420,12 @@ def _build_shuffle_idx(num_samples, total_size, np_rng):
 
     shuffle_idx_first = np.arange(start=0, stop=num_samples,
                                   step=1, dtype=dtype_)
-    np_rng.shuffle(shuffle_idx_first)
+    #np_rng.shuffle(shuffle_idx_first)
     if num_samples == total_size:
         return shuffle_idx_first
 
     shuffle_idx_last = np.arange(start=num_samples, stop=total_size,
                                  step=1, dtype=dtype_)
-    np_rng.shuffle(shuffle_idx_last)
+    #np_rng.shuffle(shuffle_idx_last)
 
     return np.concatenate((shuffle_idx_first, shuffle_idx_last))
