@@ -5,8 +5,10 @@
 RANK=0
 WORLD_SIZE=1
 
-DATA_PATH=<Specify path and file prefix>_text_document
-CHECKPOINT_PATH=<Specify path>
+export MASTER_PORT=60039
+export CUDA_VISIBLE_DEVICES=7
+DATA_PATH="input_path/my-gpt2_text_document"
+CHECKPOINT_PATH=./save_steps
 
 
 python pretrain_gpt.py \
@@ -14,11 +16,11 @@ python pretrain_gpt.py \
        --hidden-size 1024 \
        --num-attention-heads 16 \
        --micro-batch-size 4 \
-       --global-batch-size 8 \
+       --global-batch-size 4 \
        --seq-length 1024 \
        --max-position-embeddings 1024 \
-       --train-iters 500000 \
-       --lr-decay-iters 320000 \
+       --train-iters 200000 \
+       --lr-decay-iters 160000 \
        --save $CHECKPOINT_PATH \
        --load $CHECKPOINT_PATH \
        --data-path $DATA_PATH \
@@ -34,7 +36,8 @@ python pretrain_gpt.py \
        --clip-grad 1.0 \
        --lr-warmup-fraction .01 \
        --checkpoint-activations \
-       --log-interval 100 \
+       --no-scaled-masked-softmax-fusion\
+       --log-interval 1 \
        --save-interval 10000 \
        --eval-interval 1000 \
        --eval-iters 10 \
