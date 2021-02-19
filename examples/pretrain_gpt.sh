@@ -5,8 +5,8 @@
 RANK=0
 WORLD_SIZE=1
 
-export MASTER_PORT=60039
-export CUDA_VISIBLE_DEVICES=7
+export MASTER_PORT=60040
+export CUDA_VISIBLE_DEVICES=6
 DATA_PATH="input_path/my-gpt2_text_document"
 CHECKPOINT_PATH=./save_steps
 
@@ -41,4 +41,3 @@ python pretrain_gpt.py \
        --save-interval 10000 \
        --eval-interval 1000 \
        --eval-iters 10 \
-       --fp16

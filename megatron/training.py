@@ -620,6 +620,7 @@ def train_step(forward_step_func, data_iterator,
     # Update parameters.
     timers('optimizer').start()
     update_successfull = optimizer.step()
+    print("the update_successful:{}".format(update_successfull))
     timers('optimizer').stop()
 
     # Update learning rate.
@@ -638,8 +639,9 @@ def train_step(forward_step_func, data_iterator,
         for key in losses_reduced[0]:
             losses_reduced_for_key = [x[key] for x in losses_reduced]
             loss_reduced[key] = sum(losses_reduced_for_key) / len(losses_reduced_for_key)
+            print("the loss reduced:{}".format(loss_reduced))
         return loss_reduced, skipped_iter
-    return {}, skipped_iter
+    return {}, skipped_iter 
 
 
 def training_log(loss_dict, total_loss_dict, learning_rate, iteration,
@@ -740,6 +742,7 @@ def training_log(loss_dict, total_loss_dict, learning_rate, iteration,
             elapsed_time_per_iteration * 1000.0)
         log_string += ' learning rate: {:.3E} |'.format(learning_rate)
         log_string += ' global batch size: {:5d} |'.format(batch_size)
+        print(total_loss_dict)
         for key in total_loss_dict:
             if key not in [advanced_iters_key, skipped_iters_key,
                            nan_iters_key]:
@@ -799,9 +802,12 @@ def train(forward_step_func, model, optimizer, lr_scheduler,
     timers('interval time').start()
     print_datetime('before the start of training step')
     report_memory_flag = True
+    save_checkpoint_and_time(iteration, model, optimizer,
+                             lr_scheduler)
     while iteration < args.train_iters:
         update_num_microbatches(args.consumed_train_samples)
         print("the learning_rate is {}".format(optimizer.state_dict()['param_groups'][0]['lr']))
+        #print("the learning_rate is {}".format(optimizer.state_dict()['optimizer']['param_groups'].keys()))
         loss_dict, skipped_iter = train_step(forward_step_func,
                                              train_data_iterator,
                                              model,
